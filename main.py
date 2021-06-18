@@ -82,6 +82,7 @@ def unset(update: Update, context: CallbackContext) -> None:
     update.message.reply_text(text)
 
 def end(update, context):
+    """this should be send after echo"""
     update.message.reply_text(
       'Happy that you send me a message 😀 I cannot completely text you back. I am still learning')
 
