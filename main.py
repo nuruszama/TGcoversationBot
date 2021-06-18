@@ -33,16 +33,16 @@ TOKEN = 'token'
 # context. Error handlers also receive the raised TelegramError object in error.
 def start(update, context):
     """Send a message when the command /start is issued."""
-    update.message.reply_text('Hi! I am Sweety, the cutest 🐈 in the world. Happy to meet you')
+    update.message.reply_text('Hi! Happy to meet you')
 
 def help(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text('Help! I am happy to assist you. Right now, I am still learning')
+    update.message.reply_text('Help! I am happy to assist you. But right now, I am still learning')
 
 def alarm(context: CallbackContext) -> None:
     """Send the alarm message."""
     context.bot.send_message(chat_id=context.job.context, 
-                             text='beep!')
+                             text='beep! Here is your reminder')
 
 def remove_job_if_exists(name: str, context: CallbackContext) -> bool:
     """Remove job with given name. Returns whether job was removed."""
@@ -73,7 +73,6 @@ def set_timer(update: Update, context: CallbackContext) -> None:
 
     except (IndexError, ValueError):
         update.message.reply_text('Usage: /set <seconds>')
-
 
 def unset(update: Update, context: CallbackContext) -> None:
     """Remove the job if the user changed their mind."""
