@@ -160,7 +160,6 @@ def main():
     dp = updater.dispatcher
 
     # on different commands - answer in Telegram
-    dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("set", set_timer))
     dp.add_handler(CommandHandler("unset", unset))
@@ -168,7 +167,7 @@ def main():
 
     # on noncommand i.e message - welcome message or starting of coversation
     conv_handler = ConversationHandler(entry_points, fallbacks)
-        entry_points=[MessageHandler(Filters.text, incoming)],
+        entry_points=[CommandHandler(('start'), start)],
         states={
            CHOOSING: [
                MessageHandler(Filters.regex('^(Age|Favourite colour|Number of siblings)$'), regular_choice),
