@@ -25,19 +25,83 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
-ECHO, END = range (2)
 """replace token with the token you got from bot father corresponding to your bot"""
 TOKEN = 'token'
 
+CHOOSING, TYPING_CHOICE, TYPING_REPLY = range (3)
+
+reply_keyboard = [
+    ['Age', 'Favourite colour'],
+    ['Number of siblings', 'Something else...'],
+    ['Done'],
+]
+markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
+
+def facts_to_str(user_data: Dict[str, str]) -> str:
+    """Helper function for formatting the gathered user info."""
+    facts = [f'{key} - {value}' for key, value in user_data.items()]
+    return "\n".join(facts).join(['\n', '\n'])
+
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
+
 def start(update, context):
     """Send a message when the command /start is issued."""
-    update.message.reply_text('Hi! Happy to meet you')
+    update.message.reply_text(
+        "Hi @#{message.from.username}! I am Sweety, the cutest 🐈 in the world."
+        "About what you would like to talk to me"
+        "eg: Name, age, hobbies. Reply anything like this"
+    )
 
-def help(update, context):
-    """Send a message when the command /help is issued."""
-    update.message.reply_text('Help! I am happy to assist you. But right now, I am still learning')
+    return CHOOSING
+
+def regular_choice(update: Update, context: CallbackContext) -> int:
+    """Ask the user for info about the selected predefined choice."""
+    text = update.message.text
+    context.user_data['choice'] = text
+    update.message.reply_text(f'Your {text.lower()}? Yes, I would love to hear about that!')
+
+    return TYPING_REPLY
+
+def custom_choice(update: Update, context: CallbackContext) -> int:
+    """Ask the user for a description of a custom category."""
+    update.message.reply_text(
+        "Alright, please send me the category about which you wish to talk"
+        "for example 'Most impressive skill'"
+        )
+
+    return TYPING_CHOICE
+
+def received_information(update: Update, context: CallbackContext) -> int:
+    """Store info provided by user and ask for the next category."""
+    user_data = context.user_data
+    text = update.message.text
+    category = user_data['choice']
+    user_data[category] = text
+    del user_data['choice']
+
+    update.message.reply_text(
+        "Neat! Just so you know, this is what you already told me:"
+        f"{facts_to_str(user_data)} You can tell me more, or change your opinion"
+        " on something.",
+        reply_markup=markup,
+    )
+
+    return CHOOSING
+
+def done(update: Update, context: CallbackContext) -> int:
+    """Display the gathered info and end the conversation."""
+    user_data = context.user_data
+    if 'choice' in user_data:
+        del user_data['choice']
+
+    update.message.reply_text(
+        f"I learned these facts about you: {facts_to_str(user_data)}Until next time!",
+        reply_markup=ReplyKeyboardRemove(),
+    )
+
+    user_data.clear()
+    return ConversationHandler.END
 
 def alarm(context: CallbackContext) -> None:
     """Send the alarm message."""
@@ -81,21 +145,6 @@ def unset(update: Update, context: CallbackContext) -> None:
     text = 'Timer successfully cancelled!' if job_removed else 'You have no active timer.'
     update.message.reply_text(text)
 
-def end(update, context):
-    """this should be send after echo"""
-    update.message.reply_text(
-      'Happy that you send me a message 😀 I cannot completely text you back. I am still learning')
-
-def echo(update, context):
-    """Echo the user message."""
-    update.message.reply_text(update.message.text)
-
-def incoming(update, context):
-    """give you a welcome message when you text the bot. after that echo of your message is send to you."""
-    update.message.reply_text('Hi, you send me')
-
-    return ECHO
-
 def error(update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
@@ -118,13 +167,18 @@ def main():
     """when /help or /start is tiggered, bot replies with what we defined with start or help respectively"""
 
     # on noncommand i.e message - welcome message or starting of coversation
-    conv_handler = ConversationHandler(
+    conv_handler = ConversationHandler(entry_points, fallbacks)
         entry_points=[MessageHandler(Filters.text, incoming)],
         states={
-                ECHO: [MessageHandler(Filters.text, echo)],
-                },
-        Fallbacks=[MessageHandler(Filters.text, end)],
-        )
+           CHOOSING: [
+               MessageHandler(Filters.regex('^(Age|Favourite colour|Number of siblings)$'), regular_choice),
+               MessageHandler(Filters.regex('^Something else...$'), custom_choice) ],
+           TYPING_CHOICE: [
+               MessageHandler(Filters.text & ~(Filters.command | Filters.regex('^Done$')), regular_choice) ],
+           TYPING_REPLY: [
+               MessageHandler(Filters.text & ~(Filters.command | Filters.regex('^Done$')), received_information) ],
+           },
+        fallbacks=MessageHandler(Filters.regex('^Done$'), done)
 
     dp.add_handler(conv_handler)
 
