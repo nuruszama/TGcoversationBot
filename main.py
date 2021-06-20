@@ -1,6 +1,5 @@
 """
-Simple Bot to reply to Telegram messages taken from the python-telegram-bot examples.
-Deployed using heroku.
+Simple Conversation Telegram bot taken from the python-telegram-bot examples.
 """
 
 import logging
@@ -48,9 +47,9 @@ def facts_to_str(user_data: Dict[str, str]) -> str:
 def start(update, context):
     """Send a message when the command /start is issued."""
     update.message.reply_text(
-        "Hi @#{message.from.username}! I am Sweety, the cutest 🐈 in the world."
-        "About what you would like to talk to me"
-        "eg: Name, age, hobbies. Reply anything like this"
+        "Hi @#{message.from.username}! \n"
+        "About what you would like to talk to me \n \n"
+        "eg: Name, age, hobbies. Reply anything like this \n"
     )
 
     return CHOOSING
