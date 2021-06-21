@@ -24,6 +24,34 @@ TYPING_MESSAGE, TYPING_DESTINATION, GO = range(3)
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
 
+#Send a message when the command /start is issued.
+def start(update, context) -> None:
+    context.bot.send_message(chat_id=update.message.chat_id, text=
+        "Hi! I'm tweety, a telegram bot")
+
+#Send a message when the command /help is issued.
+def help(update, context) -> None:
+    context.bot.send_message(chat_id=update.message.chat_id, text=
+        "Help! I can forward your text messages to your group \n"
+        "\n"
+        "Type or click /forward to use this feature")
+
+def hi(update, context) -> None:
+    context.bot.send_message(chat_id=update.message.chat_id, text=
+        "Hey, How are you?")
+
+def morning(update, context) -> None:
+    context.bot.send_message(chat_id=update.message.chat_id, text=
+        "Very Good Morning dear")
+
+def night(update, context) -> None:
+    context.bot.send_message(chat_id=update.message.chat_id, text=
+        "Good Night")
+
+def nice(update, context) -> None:
+    context.bot.send_message(chat_id=update.message.chat_id, text=
+        "Glad to hear that")
+
 #Send a message when the command /forward is issued.
 def forward(update, context) -> None:
     update.message.reply_text(
@@ -82,6 +110,11 @@ def main():
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
 
+    # on different commands - answer in Telegram
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("help", help))
+    dp.add_handler(conv_handler)
+
     # procedure to forward messsage
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('forward', forward)],
@@ -109,6 +142,13 @@ def main():
     )
 
     dp.add_handler(conv_handler)
+    
+    # on noncommand i.e message - echo the message on Telegram
+    dp.add_handler(MessageHandler(Filters.text('^(hi|hello|hey|hola)$'), hi))
+    dp.add_handler(MessageHandler(Filters.text('^(nice|well|awesome|cool)$'), nice))
+    dp.add_handler(MessageHandler(Filters.text('^(mrng|morning)$'), morning))
+    dp.add_handler(MessageHandler(Filters.text('^(night|good night|ni8|nyt)$'), night))
+
     
     # log all errors
     dp.add_error_handler(error)
