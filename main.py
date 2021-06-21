@@ -27,7 +27,7 @@ TYPING_MESSAGE, TYPING_DESTINATION, GO = range(3)
 #Send a message when the command /start is issued.
 def start(update, context) -> None:
     context.bot.send_message(chat_id=update.message.chat_id, text=
-        "Hi! I'm tweety, a telegram bot")
+        "Hi! I'm a telegram bot")
 
 #Send a message when the command /help is issued.
 def help(update, context) -> None:
