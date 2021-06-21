@@ -1,6 +1,7 @@
 # TGcoversationBot
-Trying to create a bot which can handle any conversation without bot's reply keyboard.
-I'm a mechanical engineer and have no knowledge in programing. If you can help, I would be so much happy 😊
+Trying to create a bot which can
+1. handle any in group or personal conversation without bot's reply keyboard.
+2. Forward your message to specified spot when commanted to do.
 
 # Installation
 Do I need to install pip?
