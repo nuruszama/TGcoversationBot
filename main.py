@@ -27,7 +27,7 @@ TYPING_MESSAGE, TYPING_DESTINATION, GO = range(3)
 #Send a message when the command /start is issued.
 def start(update, context) -> None:
     context.bot.send_message(chat_id=update.message.chat_id, text=
-        "Hi! I'm a telegram bot")
+        "Hi {} ! I'm a telegram bot".format(user['first_name'])
 
 #Send a message when the command /help is issued.
 def help(update, context) -> None:
@@ -36,21 +36,33 @@ def help(update, context) -> None:
         "\n"
         "Type or click /forward to use this feature")
 
-def hi(update, context) -> None:
+#Replies with known telegram details
+def about(update, context) -> None:
+    user = update.message.from_user
+    context.bot.send_message (chat_id = update.message.chat_id, text =
+        "Username    : {}\nFirst Name  : {}\nLast Name  : {}\nUser Id         : {}"
+        .format(user['username'], user['first_name'],user['last_name'], user['id']))
+ 
+#pre-set natural responses without the usage of commands
+def hi(update, context):
+    user = update.message.from_user
     context.bot.send_message(chat_id=update.message.chat_id, text=
-        "Hey, How are you?")
-
+        "Hey {}, How are you?".format(user['first_name']))
 def morning(update, context) -> None:
     context.bot.send_message(chat_id=update.message.chat_id, text=
         "Very Good Morning dear")
-
 def night(update, context) -> None:
     context.bot.send_message(chat_id=update.message.chat_id, text=
         "Good Night")
-
+def here(update, context) -> None:
+    context.bot.send_message(chat_id=update.message.chat_id, text=
+        "I'm here..")
 def nice(update, context) -> None:
     context.bot.send_message(chat_id=update.message.chat_id, text=
         "Glad to hear that")
+def thanks_you_asked(update, context) -> None:
+    context.bot.send_message(chat_id=update.message.chat_id, text=
+        "Thank you so much for asking. I'm fine")
 
 #Send a message when the command /forward is issued.
 def forward(update, context) -> None:
@@ -113,6 +125,7 @@ def main():
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
+    dp.add_handler(CommandHandler("about_me", about))
     dp.add_handler(conv_handler)
 
     # procedure to forward messsage
@@ -144,11 +157,12 @@ def main():
     dp.add_handler(conv_handler)
     
     # on noncommand i.e message - echo the message on Telegram
-    dp.add_handler(MessageHandler(Filters.text('^(hi|hello|hey|hola)$'), hi))
-    dp.add_handler(MessageHandler(Filters.text('^(nice|well|awesome|cool)$'), nice))
-    dp.add_handler(MessageHandler(Filters.text('^(mrng|morning)$'), morning))
-    dp.add_handler(MessageHandler(Filters.text('^(night|good night|ni8|nyt)$'), night))
-
+    dp.add_handler(MessageHandler(Filters.regex('^(hi|hello|hey|hola)$'), hi))
+    dp.add_handler(MessageHandler(Filters.regex('^(fine|nice|well|awesome|cool)$'), nice))
+    dp.add_handler(MessageHandler(Filters.regex('^(mrng|morning)$'), morning))
+    dp.add_handler(MessageHandler(Filters.regex('^(night|good night|ni8|nyt)$'), night))
+    dp.add_handler(MessageHandler(Filters.regex('How are you?'), thanks_you_asked))
+    dp.add_handler(MessageHandler(Filters.regex('^(name|Name)$'), here))
     
     # log all errors
     dp.add_error_handler(error)
