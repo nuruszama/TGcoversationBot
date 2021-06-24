@@ -27,12 +27,12 @@ TYPING_MESSAGE, TYPING_CHATID, SENDMSG = range(3)
 #Send a message when the command /start is issued.
 def start(update, context) -> None:
     context.bot.send_message(chat_id=update.message.chat_id, text=
-        "Hi {} ! I'm a telegram bot".format(user['first_name'])
+        "Hi {} 🙂! I'm a telegram bot 🤖".format(user['first_name'])
 
 #Send a message when the command /help is issued.
 def help(update, context) -> None:
     context.bot.send_message(chat_id=update.message.chat_id, text=
-        "Help! I can forward your text messages to your group \n"
+        "Help 🤔! I can forward your text messages to your group \n"
         "\n"
         "Type or click /forward to use this feature")
 
@@ -52,7 +52,7 @@ def msg_id(update, context):
 def edit(update, context: CallbackContext) -> None:
     context.bot.editMessageText(chat_id=update.message.chat_id,
                                 message_id=update.message.reply_to_message.message_id,
-                                text="This message was edited")
+                                text="This message was edited 🤧")
 
 #To delete messages with bot (bot should be admin to edit others messsage)
 def delete_message(update, context):
@@ -65,22 +65,22 @@ def delete_message(update, context):
 def hi(update, context):
     user = update.message.from_user
     context.bot.send_message(chat_id=update.message.chat_id, text=
-        "Hey {}, How are you?".format(user['first_name']))
+        "Hey {} 😄, How are you?".format(user['first_name']))
 def morning(update, context) -> None:
     context.bot.send_message(chat_id=update.message.chat_id, text=
-        "Very Good Morning dear")
+        "Very Good Morning dear 🌄")
 def night(update, context) -> None:
     context.bot.send_message(chat_id=update.message.chat_id, text=
-        "Good Night")
+        "Good Night 😴💤")
 def here(update, context) -> None:
     context.bot.send_message(chat_id=update.message.chat_id, text=
-        "I'm here..")
+        "I'm here.. 😋")
 def nice(update, context) -> None:
     context.bot.send_message(chat_id=update.message.chat_id, text=
-        "Glad to hear that")
+        "Glad to hear that 😍")
 def thanks_you_asked(update, context) -> None:
     context.bot.send_message(chat_id=update.message.chat_id, text=
-        "Thank you so much for asking. I'm fine")
+        "Thank you so much for asking ❤️. I'm fine 😌")
 
 #Send a message when the command /forward is issued.
 def forward(update, context) -> None:
