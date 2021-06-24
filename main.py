@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 """replace token with the token you got from bot father corresponding to your bot"""
 TOKEN = 'token'
 
-TYPING_MESSAGE, TYPING_DESTINATION, GO = range(3)
+TYPING_MESSAGE, TYPING_CHATID, SENDMSG = range(3)
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
@@ -42,7 +42,25 @@ def about(update, context) -> None:
     context.bot.send_message (chat_id = update.message.chat_id, text =
         "Username    : {}\nFirst Name  : {}\nLast Name  : {}\nUser Id         : {}"
         .format(user['username'], user['first_name'],user['last_name'], user['id']))
- 
+
+#To get the message id
+def msg_id(update, context):
+    """Echo the user message."""
+    update.message.reply_text(update.message.message_id)
+
+#To edit a message send by bot
+def edit(update, context: CallbackContext) -> None:
+    context.bot.editMessageText(chat_id=update.message.chat_id,
+                                message_id=update.message.reply_to_message.message_id,
+                                text="This message was edited")
+
+#To delete messages with bot (bot should be admin to edit others messsage)
+def delete_message(update, context):
+    """deleting a message from the user message or self."""
+    context.bot.delete_message(chat_id=update.message.chat_id,
+                               message_id=update.message.reply_to_message.message_id
+                               )
+
 #pre-set natural responses without the usage of commands
 def hi(update, context):
     user = update.message.from_user
@@ -72,34 +90,37 @@ def forward(update, context) -> None:
         "Type <Exit> to destroy forward command \n"
     )
 
+    return TYPING_CHATID
+
+#taking chat_id to which message is to be forwarded
+def inputchatid(update: Update, context: CallbackContext):
+    chatid = update.message.text
+    context.bot.send_message(chat_id=update.message.chat_id, text=
+        "chat_id you gave me is [ " f"{chatid.lower()} ]. "
+        "Now send me the message you want to forward"
+    )
+
     return TYPING_MESSAGE
 
-#taking message to be forwarded as input
-def fwd_msg(update, context) -> None:
-    content = 'update.message.text'
-    
+#taking message which is to be forwarded
+def onetimemsg(update, context):
+    msg = update.message.text
+    chatid = context.inputchatid.chatid
     context.bot.send_message(chat_id=update.message.chat_id, text=
-        "Neat! Now tell me where to send this message \n"
-        "\n"
-        "Reply with chat id"
-    )
-
-    return TYPING_DESTINATION
-
-#taking destination to which message is to be forwarded as input
-def destination(update, context) -> None:
-    destination = 'update.message.text'
-    context.bot.send_message(chat_id=update.message.chat_id, text=
-        "I have recorded your message and chat id.\n\n"
+        "You said forward -  " f"{msg.lower()} to " f"{chatid.lower()}\n\n"
         "Forwarding your message.....\n"
-        "Done. Check forward destination"
+        "Done. Check your forward destination"
     )
 
-    return GO
+    return SENDMSG
 
 #Sending the message to destination
-def send(update, context) -> None:
-    context.bot.send_message(chat_id=destination, text=content)
+def send(update, context):
+    chatid = context.inputchatid.chatid
+    msg = context.onetimemsg.msg
+    context.bot.send_message(chat_id=inputchatid.id, text=onetimemsg.msg)
+
+    return ConversationHandler.END
 
 def exit(update, context) -> None:
     context.bot.send_message(chat_id=update.message.chat_id, text=
@@ -125,33 +146,32 @@ def main():
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
+    dp.add_handler(CommandHandler("msg_id", msg_id))
     dp.add_handler(CommandHandler("about_me", about))
+    dp.add_handler(CommandHandler("edit", edit))
+    dp.add_handler(CommandHandler("delete", delete_message))
     dp.add_handler(conv_handler)
 
     # procedure to forward messsage
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('forward', forward)],
         states={
+            TYPING_CHATID: [
+                MessageHandler(
+                    Filters.text & ~(Filters.command | Filters.regex('^Exit$')),
+                    inputchatid)
+                ],
             TYPING_MESSAGE: [
                 MessageHandler(
                     Filters.text & ~(Filters.command | Filters.regex('^Exit$')),
-                    fwd_msg,
-                )
-            ],
-            TYPING_DESTINATION: [
+                    onetimemsg)
+                ],
+            SENDMSG: [
                 MessageHandler(
-                    Filters.text & ~(Filters.command | Filters.regex('^Exit$')),
-                    destination,
-                )
-            ],
-            GO: [
-                MessageHandler(
-                    Filters.text & ~(Filters.command | Filters.regex('^Exit$')),
-                    send,
-                )
-            ],
-        },
-        fallbacks=[MessageHandler(Filters.regex('^Exit$'), exit)],
+                    Filters.text, send)
+                ],
+            },
+        fallbacks=[MessageHandler(Filters.regex('^Exit$'), exit)]
     )
 
     dp.add_handler(conv_handler)
